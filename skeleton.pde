@@ -23,10 +23,14 @@ Copyright (C) 2014  Thomas Sanchez Lengeling.
 
 import KinectPV2.KJoint;
 import KinectPV2.*;
+import ddf.minim.*; // Sounnd.
 
 KinectPV2 kinect;
 
 Skeleton [] skeleton; // スケルトンデータ配列.
+
+Minim minim;  // Minim型変数であるminimの宣言.
+AudioPlayer player;  // サウンドデータ格納用の変数.
 
 int DISPLAY_WIDTH = 1920; // Kinectの幅解像度.
 int DISPLAY_HEIGHT = 1080; // Kinectの高さ解像度.
@@ -55,6 +59,11 @@ void setup() {
   kinect.enableSkeletonColorMap(true);
   kinect.enableColorImg(true);
   kinect.init();
+  
+  // Sound.
+  minim = new Minim(this);
+  player = minim.loadFile("He Mele No Lilo Hula Dance.mp3"); // mp3の読み込み.
+  player.play();  // 再生.
 }
 
 void draw() {
@@ -85,7 +94,7 @@ void draw() {
   
   textSize(14);
   fill(blue);
-  text("Project: コグニステップ", 50, 50);
+  text("Project: フラ・コグニサイズ", 50, 50);
   text("DisplaySize: "+int(DISPLAY_WIDTH*dif)+"*"+int(DISPLAY_HEIGHT*dif), 50, 50+24*1);
   text("FrameRate: "+int(frameRate), 50, 50+24*2);
   
@@ -191,5 +200,12 @@ void handState(int handState) {
     fill(255, 255, 255); // White.
     break;
   }
+}
+
+// Sound停止.
+void stop(){
+  player.close();
+  minim.stop();
+  super.stop();
 }
 
