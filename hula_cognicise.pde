@@ -45,6 +45,10 @@ color pink = color(247, 202, 201); // PANTONE ROSE QUARTZ.
 color blue = color(146, 168, 209); //PANTONE SERENITY.
 color white = color(255, 255, 255);
 
+boolean clap = false; // 拍手判定変数.
+PVector r, l; // 手ベクトル.
+float hand_dist = 0; // 手の距離.
+
 void setup() {  
   // Display.
   size(int(DISPLAY_WIDTH*dif), int(DISPLAY_HEIGHT*dif), P3D);
@@ -100,7 +104,8 @@ void draw() {
   text("Project: HULA COGNICISE", 50, 50);
   text("DisplaySize: "+int(DISPLAY_WIDTH*dif)+"*"+int(DISPLAY_HEIGHT*dif), 50, 50+24*1);
   text("FrameRate: "+int(frameRate), 50, 50+24*2);
-  
+  text("HandDistance: "+int(hand_dist), 50, 50+24*3);
+  text("Clap: "+clap, 50, 50+24*4);
 }
 
 //Bodyを描画する.
@@ -189,13 +194,28 @@ void drawBodyPosition(KJoint joint, String body_name){
   popMatrix();
 }
 
-// 手の距離を測定する.
+// 手の距離を描画する.
 void drawHandDist(KJoint jointR, KJoint jointL){
+  r = new PVector(jointR.getX()*dif, jointR.getY()*dif); // 右手ベクトル.
+  l = new PVector(jointL.getX()*dif, jointL.getY()*dif); // 左手ベクトル.
+  float dist_th = 50;
+  
+  // 手の距離を測定する.
+  hand_dist = PVector.dist(r, l);
+  
+  // 手の距離を描画する.
   fill(blue);
   stroke(blue);
   strokeWeight(3);
-  line(jointR.getX()*dif, jointR.getY()*dif, jointL.getX()*dif, jointL.getY()*dif);
-  println(jointR.getX()*dif, jointR.getY()*dif, jointL.getX()*dif, jointL.getY()*dif);
+  line(r.x, r.y, l.x, l.y);
+  
+  // 拍手の判定をする.
+  if(hand_dist <= dist_th ){
+    clap = true;
+  }
+  else{
+    clap = false;
+  }
 }
 
 /*
