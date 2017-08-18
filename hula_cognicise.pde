@@ -53,7 +53,7 @@ void setup() {
   noto_sans = createFont("Noto Sans CJK JP", 24, true);
   textFont(noto_sans);  
   
-  // Kinectの初期化.
+  // Kinect.
   kinect = new KinectPV2(this);
   kinect.enableSkeleton(true);
   kinect.enableSkeletonColorMap(true);
@@ -63,11 +63,11 @@ void setup() {
   // Sound.
   minim = new Minim(this);
   player = minim.loadFile("He Mele No Lilo Hula Dance.mp3"); // mp3の読み込み.
-  player.play();  // 再生.
+  // player.play();  // 再生.
 }
 
 void draw() {
-  background(0);
+  clear();
   
   image(kinect.getColorImage(), 0, 0, width, height);
 
@@ -77,9 +77,7 @@ void draw() {
   for (int i = 0; i < skeleton.length; i++) {
     if (skeleton[i].isTracked()) {
       KJoint[] joints = skeleton[i].getJoints();
- 
-      fill(pink);
-      stroke(pink);
+      
       drawBody(joints);
       
       //draw different color for each hand state
@@ -91,10 +89,12 @@ void draw() {
       drawBodyPosition(joints[KinectPV2.JointType_HandLeft], "handLeft"); // Kinect座標の左手.
       drawBodyPosition(joints[KinectPV2.JointType_FootRight], "FootRight"); // Kinect座標の右足.
       drawBodyPosition(joints[KinectPV2.JointType_FootLeft], "FootLeft"); // Kinect座標の左足.
+      
+      drawHandDist(joints[KinectPV2.JointType_HandRight], joints[KinectPV2.JointType_HandLeft]);
     }
   }
   
-  // システム情報を表示する.
+  // システム情報を描画する.
   textSize(14);
   fill(white);
   text("Project: HULA COGNICISE", 50, 50);
@@ -103,8 +103,11 @@ void draw() {
   
 }
 
-//DRAW BODY
+//Bodyを描画する.
 void drawBody(KJoint[] joints) {
+  fill(pink);
+  stroke(pink);
+  
   drawBone(joints, KinectPV2.JointType_Head, KinectPV2.JointType_Neck);
   drawBone(joints, KinectPV2.JointType_Neck, KinectPV2.JointType_SpineShoulder);
   drawBone(joints, KinectPV2.JointType_SpineShoulder, KinectPV2.JointType_SpineMid);
@@ -175,15 +178,24 @@ void drawHandState(KJoint joint) {
 
 // Bodyの位置情報を描画する.
 void drawBodyPosition(KJoint joint, String body_name){
-  pushMatrix();
-  translate(joint.getX()*dif - 20, joint.getY()*dif - 100, joint.getZ()*dif);
   // background(pink);
   fill(white);
+  pushMatrix();
+  translate(joint.getX()*dif - 20, joint.getY()*dif - 100, joint.getZ()*dif);
   text(body_name, 0, 0);
   text("X: "+int(joint.getX()*dif - 50), 0, 20);
-  text("Y: "+int(joint.getY()*dif - 50), 0, 35);
-  text("Z: "+int(joint.getZ()*dif), 0, 50);
+  text("Y: "+int(joint.getY()*dif - 50), 0, 20 + 15*1);
+  text("Z: "+int(joint.getZ()*dif), 0, 20 + 15*2);
   popMatrix();
+}
+
+// 手の距離を測定する.
+void drawHandDist(KJoint jointR, KJoint jointL){
+  fill(blue);
+  stroke(blue);
+  strokeWeight(3);
+  line(jointR.getX()*dif, jointR.getY()*dif, jointL.getX()*dif, jointL.getY()*dif);
+  println(jointR.getX()*dif, jointR.getY()*dif, jointL.getX()*dif, jointL.getY()*dif);
 }
 
 /*
