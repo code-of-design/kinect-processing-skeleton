@@ -86,15 +86,18 @@ void draw() {
       drawHandState(joints[KinectPV2.JointType_HandRight]);
       drawHandState(joints[KinectPV2.JointType_HandLeft]);
       
-      // 手の位置情報を描画する.
-      drawHandPos(joints[KinectPV2.JointType_HandRight]); // Kinect座標の右手.
-      drawHandPos(joints[KinectPV2.JointType_HandLeft]); // Kinect座標の左手.
+      // 人体データの位置情報を描画する.
+      drawBodyPosition(joints[KinectPV2.JointType_HandRight], "HandRight"); // Kinect座標の右手.
+      drawBodyPosition(joints[KinectPV2.JointType_HandLeft], "handLeft"); // Kinect座標の左手.
+      drawBodyPosition(joints[KinectPV2.JointType_FootRight], "FootRight"); // Kinect座標の右足.
+      drawBodyPosition(joints[KinectPV2.JointType_FootLeft], "FootLeft"); // Kinect座標の左足.
     }
   }
   
+  // システム情報を表示する.
   textSize(14);
-  fill(blue);
-  text("Project: フラ・コグニサイズ", 50, 50);
+  fill(white);
+  text("Project: HULA COGNICISE", 50, 50);
   text("DisplaySize: "+int(DISPLAY_WIDTH*dif)+"*"+int(DISPLAY_HEIGHT*dif), 50, 50+24*1);
   text("FrameRate: "+int(frameRate), 50, 50+24*2);
   
@@ -170,11 +173,16 @@ void drawHandState(KJoint joint) {
   popMatrix();
 }
 
-// 手の位置情報を描画する.
-void drawHandPos(KJoint joint){
+// Bodyの位置情報を描画する.
+void drawBodyPosition(KJoint joint, String body_name){
   pushMatrix();
-  translate(joint.getX()*dif - 50, joint.getY()*dif - 50, joint.getZ()*dif);
-  text("Hand: "+int(joint.getX()*dif - 50)+" "+int(joint.getY()*dif - 50)+" "+int(joint.getZ()*dif), 0, 0);
+  translate(joint.getX()*dif - 20, joint.getY()*dif - 100, joint.getZ()*dif);
+  // background(pink);
+  fill(white);
+  text(body_name, 0, 0);
+  text("X: "+int(joint.getX()*dif - 50), 0, 20);
+  text("Y: "+int(joint.getY()*dif - 50), 0, 35);
+  text("Z: "+int(joint.getZ()*dif), 0, 50);
   popMatrix();
 }
 
