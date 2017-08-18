@@ -21,17 +21,17 @@ Copyright (C) 2014  Thomas Sanchez Lengeling.
  THE SOFTWARE.
  */
 
-import KinectPV2.KJoint;
-import KinectPV2.*;
-import ddf.minim.*; // Sounnd.
+import KinectPV2.KJoint; 
+import KinectPV2.*; // Kinect Libray.
+import ddf.minim.*; // Sounnd Library.
 
-KinectPV2 kinect;
+KinectPV2 kinect;  // Kinectデータ変数.
+Minim minim;  // Soundデータ変数.
+AudioPlayer player;  // Soundデータ変数.
 
 Skeleton [] skeleton; // スケルトンデータ配列.
 
-Minim minim;  // Minim型変数であるminimの宣言.
-AudioPlayer player;  // サウンドデータ格納用の変数.
-
+// Display.
 int DISPLAY_WIDTH = 1920; // Kinectの幅解像度.
 int DISPLAY_HEIGHT = 1080; // Kinectの高さ解像度.
   
