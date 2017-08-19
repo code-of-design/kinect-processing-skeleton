@@ -1,27 +1,27 @@
 /*
 Copyright (C) 2014  Thomas Sanchez Lengeling.
  KinectPV2, Kinect for Windows v2 library for processing
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR AsNY CLAIM, DAMAGES OR OTHER
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  */
 
-import KinectPV2.KJoint; 
+import KinectPV2.KJoint;
 import KinectPV2.*; // Kinect Libray.
 import ddf.minim.*; // Sounnd Library.
 
@@ -34,8 +34,10 @@ Skeleton [] skeleton; // スケルトンデータ配列.
 // Display.
 int DISPLAY_WIDTH = 1920; // Kinectの幅解像度.
 int DISPLAY_HEIGHT = 1080; // Kinectの高さ解像度.
-  
-float dif = 0.5; // Displayサイズの調整変数.
+
+float DISPLAY_RATE = 0.7; // Displayサイズの調整変数.
+float kinect_x;
+float kinect_y;
 
 // Font.
 PFont noto_sans;
@@ -49,21 +51,24 @@ boolean clap = false; // 拍手判定変数.
 PVector r, l; // 手ベクトル.
 float hand_dist = 0; // 手の距離.
 
-void setup() {  
+void setup() {
   // Display.
-  size(int(DISPLAY_WIDTH*dif), int(DISPLAY_HEIGHT*dif), P3D);
-  
+  // size(int(DISPLAY_WIDTH*DISPLAY_RATE), int(DISPLAY_HEIGHT*DISPLAY_RATE), P3D);
+  size(displayWidth, displayHeight, P3D);
+  kinect_x = (width-int(DISPLAY_WIDTH*DISPLAY_RATE))/2;
+  kinect_y = 100;
+
   // Font.
-  noto_sans = createFont("Noto Sans CJK JP", 24, true);
-  textFont(noto_sans);  
-  
+  noto_sans = createFont("Noto Sans CJK JP", 72, true);
+  textFont(noto_sans);
+
   // Kinect.
   kinect = new KinectPV2(this);
   kinect.enableSkeleton(true);
   kinect.enableSkeletonColorMap(true);
   kinect.enableColorImg(true);
   kinect.init();
-  
+
   // Sound.
   minim = new Minim(this);
   player = minim.loadFile("He Mele No Lilo Hula Dance.mp3"); // mp3の読み込み.
@@ -71,48 +76,68 @@ void setup() {
 }
 
 void draw() {
-  clear();
-  
-  image(kinect.getColorImage(), 0, 0, width, height);
+  background(blue);
 
+  image(kinect.getColorImage(), kinect_x, kinect_y, int(DISPLAY_WIDTH*DISPLAY_RATE), int(DISPLAY_HEIGHT*DISPLAY_RATE));
   skeleton =  kinect.getSkeletonColorMap();
 
   //individual JOINTS
   for (int i = 0; i < skeleton.length; i++) {
     if (skeleton[i].isTracked()) {
       KJoint[] joints = skeleton[i].getJoints();
-      
+
       drawBody(joints);
-      
+
       //draw different color for each hand state
       drawHandState(joints[KinectPV2.JointType_HandRight]);
       drawHandState(joints[KinectPV2.JointType_HandLeft]);
-      
+
       // 人体データの位置情報を描画する.
       drawBodyPosition(joints[KinectPV2.JointType_HandRight], "HandRight"); // Kinect座標の右手.
       drawBodyPosition(joints[KinectPV2.JointType_HandLeft], "handLeft"); // Kinect座標の左手.
       drawBodyPosition(joints[KinectPV2.JointType_FootRight], "FootRight"); // Kinect座標の右足.
       drawBodyPosition(joints[KinectPV2.JointType_FootLeft], "FootLeft"); // Kinect座標の左足.
-      
+
       drawHandDist(joints[KinectPV2.JointType_HandRight], joints[KinectPV2.JointType_HandLeft]);
     }
   }
-  
+
+  // UI.
+  drawUi();
+
   // システム情報を描画する.
   textSize(14);
   fill(white);
-  text("Project: HULA COGNICISE", 50, 50);
-  text("DisplaySize: "+int(DISPLAY_WIDTH*dif)+"*"+int(DISPLAY_HEIGHT*dif), 50, 50+24*1);
-  text("FrameRate: "+int(frameRate), 50, 50+24*2);
-  text("HandDistance: "+int(hand_dist), 50, 50+24*3);
-  text("Clap: "+clap, 50, 50+24*4);
+  pushMatrix();
+  translate(kinect_x, 40);
+  text("Project: HULA COGNICISE", 0, 24*0);
+  text("DisplaySize: "+int(DISPLAY_WIDTH*DISPLAY_RATE)+"*"+int(DISPLAY_HEIGHT*DISPLAY_RATE), 0, 24*1);
+  text("FrameRate: "+int(frameRate), 0, 24*2);
+  text("HandDistance: "+int(hand_dist), 0, 24*3);
+  text("Clap: "+clap, 0, 24*4);
+  popMatrix();
+}
+
+void drawUi(){
+  /*
+  noFill();
+  stroke(blue);
+  strokeWeight(80);
+  rect(0, 0, width, height);
+  noStroke();
+  strokeWeight(1); // 初期値.
+  */
+  fill(blue);
+  noStroke();
+  rect(0, 0, width, 160);
+  noFill();
 }
 
 //Bodyを描画する.
 void drawBody(KJoint[] joints) {
   fill(pink);
   stroke(pink);
-  
+
   drawBone(joints, KinectPV2.JointType_Head, KinectPV2.JointType_Neck);
   drawBone(joints, KinectPV2.JointType_Neck, KinectPV2.JointType_SpineShoulder);
   drawBone(joints, KinectPV2.JointType_SpineShoulder, KinectPV2.JointType_SpineMid);
@@ -122,7 +147,7 @@ void drawBody(KJoint[] joints) {
   drawBone(joints, KinectPV2.JointType_SpineBase, KinectPV2.JointType_HipRight);
   drawBone(joints, KinectPV2.JointType_SpineBase, KinectPV2.JointType_HipLeft);
 
-  // Right Arm    
+  // Right Arm
   drawBone(joints, KinectPV2.JointType_ShoulderRight, KinectPV2.JointType_ElbowRight);
   drawBone(joints, KinectPV2.JointType_ElbowRight, KinectPV2.JointType_WristRight);
   drawBone(joints, KinectPV2.JointType_WristRight, KinectPV2.JointType_HandRight);
@@ -159,24 +184,24 @@ void drawBody(KJoint[] joints) {
 
 void drawJoint(KJoint[] joints, int jointType) {
   pushMatrix();
-  translate(joints[jointType].getX()*dif, joints[jointType].getY()*dif, joints[jointType].getZ()*dif);
+  translate(joints[jointType].getX()*DISPLAY_RATE+kinect_x, joints[jointType].getY()*DISPLAY_RATE+kinect_y, joints[jointType].getZ()*DISPLAY_RATE);
   ellipse(0, 0, 25, 25);
   popMatrix();
 }
 
 void drawBone(KJoint[] joints, int jointType1, int jointType2) {
   pushMatrix();
-  translate(joints[jointType1].getX()*dif, joints[jointType1].getY()*dif, joints[jointType1].getZ()*dif);
+  translate(joints[jointType1].getX()*DISPLAY_RATE+kinect_x, joints[jointType1].getY()*DISPLAY_RATE+kinect_y, joints[jointType1].getZ()*DISPLAY_RATE);
   ellipse(0, 0, 25, 25);
   popMatrix();
-  line(joints[jointType1].getX()*dif, joints[jointType1].getY()*dif, joints[jointType1].getZ()*dif, joints[jointType2].getX()*dif, joints[jointType2].getY()*dif, joints[jointType2].getZ()*dif);
+  line(joints[jointType1].getX()*DISPLAY_RATE+kinect_x, joints[jointType1].getY()*DISPLAY_RATE+kinect_y, joints[jointType1].getZ()*DISPLAY_RATE, joints[jointType2].getX()*DISPLAY_RATE+kinect_x, joints[jointType2].getY()*DISPLAY_RATE+kinect_y, joints[jointType2].getZ()*DISPLAY_RATE);
 }
 
 void drawHandState(KJoint joint) {
   noStroke();
   handState(joint.getState());
   pushMatrix();
-  translate(joint.getX()*dif, joint.getY()*dif, joint.getZ()*dif);
+  translate(joint.getX()*DISPLAY_RATE+kinect_x, joint.getY()*DISPLAY_RATE+kinect_y, joint.getZ()*DISPLAY_RATE);
   ellipse(0, 0, 70, 70);
   popMatrix();
 }
@@ -186,29 +211,29 @@ void drawBodyPosition(KJoint joint, String body_name){
   // background(pink);
   fill(white);
   pushMatrix();
-  translate(joint.getX()*dif - 20, joint.getY()*dif - 100, joint.getZ()*dif);
+  translate(joint.getX()*DISPLAY_RATE+kinect_x - 20, joint.getY()*DISPLAY_RATE+kinect_y - 100, joint.getZ()*DISPLAY_RATE);
   text(body_name, 0, 0);
-  text("X: "+int(joint.getX()*dif - 50), 0, 20);
-  text("Y: "+int(joint.getY()*dif - 50), 0, 20 + 15*1);
-  text("Z: "+int(joint.getZ()*dif), 0, 20 + 15*2);
+  text("X: "+int(joint.getX()*DISPLAY_RATE+kinect_x - 50), 0, 20);
+  text("Y: "+int(joint.getY()*DISPLAY_RATE+kinect_y - 50), 0, 20 + 15*1);
+  text("Z: "+int(joint.getZ()*DISPLAY_RATE), 0, 20 + 15*2);
   popMatrix();
 }
 
 // 手の距離を描画する.
 void drawHandDist(KJoint jointR, KJoint jointL){
-  r = new PVector(jointR.getX()*dif, jointR.getY()*dif); // 右手ベクトル.
-  l = new PVector(jointL.getX()*dif, jointL.getY()*dif); // 左手ベクトル.
+  r = new PVector(jointR.getX()*DISPLAY_RATE+kinect_x, jointR.getY()*DISPLAY_RATE+kinect_y); // 右手ベクトル.
+  l = new PVector(jointL.getX()*DISPLAY_RATE+kinect_x, jointL.getY()*DISPLAY_RATE+kinect_y); // 左手ベクトル.
   float dist_th = 50;
-  
+
   // 手の距離を測定する.
   hand_dist = PVector.dist(r, l);
-  
+
   // 手の距離を描画する.
   fill(blue);
   stroke(blue);
   strokeWeight(3);
   line(r.x, r.y, l.x, l.y);
-  
+
   // 拍手の判定をする.
   if(hand_dist <= dist_th ){
     clap = true;
@@ -248,4 +273,3 @@ void stop(){
   minim.stop();
   super.stop();
 }
-
